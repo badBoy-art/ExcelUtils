@@ -4,7 +4,7 @@ package cn.gzhu.test.utils;
 import cn.gzhu.test.anno.ExcleColumn;
 import cn.gzhu.test.anno.ExcleColumnVerify;
 import cn.gzhu.test.anno.ExcleSheet;
-import cn.gzhu.test.constant.ExcelColumType;
+import cn.gzhu.test.constant.ExcelType;
 import cn.gzhu.test.exception.NotExcelException;
 import cn.gzhu.test.exception.NullFileException;
 import cn.gzhu.test.exception.RowNumBeyondException;
@@ -17,9 +17,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.lang.reflect.Field;
-import java.text.DateFormat;
 import java.text.DecimalFormat;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -117,7 +115,7 @@ public class ExcelUtils {
         Class<T> clazz = (Class<T>) modelList.get(0).getClass();
         //获取模版
         ExcleSheet excleSheet = clazz.getAnnotation(ExcleSheet.class);
-        Workbook wb = new XSSFWorkbook();
+        Workbook wb = getWorkbook(excleSheet.excellType());
         Sheet sheet = wb.createSheet(excleSheet.sheetName());
         //获取单元格样式
         setHeader(modelList.get(0), sheet.createRow(excleSheet.startIndex()));
@@ -138,7 +136,15 @@ public class ExcelUtils {
                 setCellValue(t, field, excleColumn, cell);
             }
         }
-        wb.write(new FileOutputStream("/Users/zhaoxuedui/Desktop/" + excleSheet.exportFileName() + excleSheet.exName()));
+        wb.write(new FileOutputStream("/Users/zhaoxuedui/Desktop/" + excleSheet.exportFileName() + excleSheet.excellType().getSuffix()));
+    }
+
+    private static Workbook getWorkbook(ExcelType excelType) {
+        if (excelType == ExcelType.EXCEL_2007) {
+            return new XSSFWorkbook();
+        }
+
+        return new HSSFWorkbook();
     }
 
 

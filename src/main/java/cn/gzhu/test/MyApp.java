@@ -27,7 +27,7 @@ public class MyApp {
 
     public static void testExportList() throws Exception {
         List<ExamineeGradeExcelModel> list = new ArrayList<ExamineeGradeExcelModel>();
-        for (int i = 0; i < 2; ++i) {
+        for (int i = 0; i < 5; ++i) {
             ExamineeGradeExcelModel e = new ExamineeGradeExcelModel();
             e.setAccount("hello" + i);
             e.setNo(i + 1);

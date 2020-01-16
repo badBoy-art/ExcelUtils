@@ -3,6 +3,7 @@ package cn.gzhu.test.pojo;
 import cn.gzhu.test.anno.ExcleColumn;
 import cn.gzhu.test.anno.ExcleSheet;
 import cn.gzhu.test.constant.ExcelColumType;
+import cn.gzhu.test.constant.ExcelType;
 import lombok.Data;
 
 import java.util.Date;
@@ -14,7 +15,7 @@ import org.apache.poi.ss.usermodel.CellType;
  * 描述：考生excel模型
  */
 @Data
-@ExcleSheet(exportFileName = "excelUtil", ignoreOnlyHaveNoRow = -1, startIndex = 0, sheetName = "myTest")
+@ExcleSheet(exportFileName = "excelUtil", ignoreOnlyHaveNoRow = -1, startIndex = 0, sheetName = "myTest", excellType = ExcelType.EXCEL_2007)
 public class ExamineeGradeExcelModel {
 
     @ExcleColumn(index = 0, javaType = ExcelColumType.IDENTITY, name = "序号")

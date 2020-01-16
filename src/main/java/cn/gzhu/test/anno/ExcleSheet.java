@@ -6,6 +6,8 @@ import java.lang.annotation.Target;
 
 import static java.lang.annotation.ElementType.TYPE;
 
+import cn.gzhu.test.constant.ExcelType;
+
 /**
  * 描述：excle表
  *
@@ -53,5 +55,5 @@ public @interface ExcleSheet {
     /**
      * 导出的文件扩展名
      */
-    String exName() default ".xlsx";
+    ExcelType excellType();
 }

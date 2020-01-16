@@ -4,6 +4,7 @@ import cn.gzhu.test.anno.ExcleColumn;
 import cn.gzhu.test.anno.ExcleColumnVerify;
 import cn.gzhu.test.anno.ExcleSheet;
 import cn.gzhu.test.constant.ExcelColumType;
+import cn.gzhu.test.constant.ExcelType;
 import lombok.Data;
 
 import java.text.SimpleDateFormat;
@@ -13,7 +14,7 @@ import java.util.Date;
  * 描述：考生excel模型
  */
 @Data
-@ExcleSheet(titleIndex = 1, startIndex = 2, importBlankRow = false, ignoreOnlyHaveNoRow = 0)
+@ExcleSheet(titleIndex = 1, startIndex = 2, importBlankRow = false, ignoreOnlyHaveNoRow = 0, excellType = ExcelType.EXCEL_2007)
 public class ExamineeExcelModel {
 
     @ExcleColumn(index = 1, javaType = ExcelColumType.STRING)
