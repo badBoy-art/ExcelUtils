@@ -1,10 +1,9 @@
 package cn.gzhu.test;
 
 import cn.gzhu.test.pojo.ExamineeExcelModel;
-import cn.gzhu.test.pojo.ExamineeGradeExcelHeadModel;
 import cn.gzhu.test.pojo.ExamineeGradeExcelModel;
-import cn.gzhu.test.pojo.ExamineeInboundExcelModel;
 import cn.gzhu.test.utils.ExcelUtils;
+
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -27,39 +26,15 @@ public class MyApp {
 
 
     public static void testExportList() throws Exception {
-        List<ExamineeGradeExcelModel> list = new ArrayList<>();
-        for (int i = 0; i < 4; ++i) {
+        List<ExamineeGradeExcelModel> list = new ArrayList<ExamineeGradeExcelModel>();
+        for (int i = 0; i < 2; ++i) {
             ExamineeGradeExcelModel e = new ExamineeGradeExcelModel();
-            e.setIdentityNum("4444");
-            e.setAccount("hello");
-            e.setGrade("100");
-            e.setInstitution("机构");
-            e.setMobile("100000");
-            //e.setNo(i+1);
-            e.setSchool("编程猫");
-            e.setStartTime(new Date());
+            e.setAccount("hello" + i);
+            e.setNo(i + 1);
             e.setSubmitTime(new Date());
-            e.setTimeCost("5.2");
-            ArrayList<String> scores = new ArrayList<>();
-            scores.add("5");
-            scores.add("15");
-            scores.add("25");
-            scores.add("35");
-            e.setScores(scores);
             list.add(e);
         }
-        ExamineeGradeExcelHeadModel head = new ExamineeGradeExcelHeadModel();
-        ArrayList<String> heads = new ArrayList<>();
-        Map<String, Integer> mergeHeads = new LinkedHashMap<>();
-        heads.add("1");
-        heads.add("2");
-        heads.add("3");
-        heads.add("4");
-        mergeHeads.put("选择题", 1);
-        mergeHeads.put("填空题", 1);
-        head.setHeads(heads);
-        head.setMergeHeads(mergeHeads);
-        ExcelUtils.export(list, head);
+        ExcelUtils.export(list);
         System.out.println("已经导出。。。");
     }
 
@@ -83,27 +58,6 @@ public class MyApp {
             System.out.println(a);
             System.out.println("======================");
         }
-    }
-
-    public static void testExport() throws Exception {
-        List<ExamineeInboundExcelModel> list = new ArrayList<>();
-        for (int i = 0; i < 4; ++i) {
-            ExamineeInboundExcelModel e = new ExamineeInboundExcelModel();
-            e.setGrade("一年级");
-            e.setSex("男");
-            e.setIdentityNum("4444" + i);
-            e.setInstitution("hello");
-            e.setMobile("12344");
-            e.setName("hello");
-            e.setSchool("编程猫");
-            e.setSubmitTime(new Date());
-            e.setAccount("xiaozhi"+i);
-            //e.setNo(i+1);
-            list.add(e);
-        }
-
-
-        //ExcelUtils.export(list);
     }
 
     //XSSF07  HSSF03
@@ -157,7 +111,6 @@ public class MyApp {
         List<ExamineeExcelModel> list = new ArrayList<>();
         System.out.println();
     }
-
 
 
 }

@@ -8,17 +8,20 @@ import cn.gzhu.test.constant.ExcelColumType;
 import cn.gzhu.test.exception.NotExcelException;
 import cn.gzhu.test.exception.NullFileException;
 import cn.gzhu.test.exception.RowNumBeyondException;
+
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class ExcelUtils {
@@ -31,7 +34,7 @@ public class ExcelUtils {
         Workbook wb = WorkbookFactory.create(file);
         Sheet sheet = wb.getSheetAt(0);
 
-        if ((sheet.getLastRowNum()+1 - excleSheet.startIndex()) > excleSheet.maxRowNum()) {
+        if ((sheet.getLastRowNum() + 1 - excleSheet.startIndex()) > excleSheet.maxRowNum()) {
             throw new RowNumBeyondException("导入的行数超过最大值:" + excleSheet.maxRowNum());
         }
 
@@ -53,7 +56,9 @@ public class ExcelUtils {
             for (Field field : fields) {
                 field.setAccessible(true);
                 ExcleColumn excleColumn = field.getAnnotation(ExcleColumn.class);
-                if (null == excleColumn) continue;
+                if (null == excleColumn) {
+                    continue;
+                }
                 int index = excleColumn.index();
                 Cell cell = row.getCell(index);
                 //excel导入时数字采用科学计数法，需要还原
@@ -67,14 +72,6 @@ public class ExcelUtils {
                             stringVal = cell.getStringCellValue();
                         }
                         MyBeanUtils.setProperty(t, field.getName(), stringVal);
-                        break;
-                    case INTEGER:
-                        Integer intVal = Integer.parseInt(format.format(cell.getNumericCellValue()));
-                        MyBeanUtils.setProperty(t, field.getName(), intVal);
-                        break;
-                    case LONG:
-                        Long longVal = Long.parseLong(format.format(cell.getNumericCellValue()));
-                        MyBeanUtils.setProperty(t, field.getName(), longVal);
                         break;
                     case DOUBLE:
                         Double doubleVal = Double.parseDouble(format.format(cell.getNumericCellValue()));
@@ -90,14 +87,13 @@ public class ExcelUtils {
 
                 if (null != excleColumnVerify) {
                     Object propVal = MyBeanUtils.getProperty(t, field.getName());
-                    ExcelColumnVerifyUtils.verity(propVal, row.getRowNum()+1, indexWithTitle.get(index), excleColumnVerify, onlyContainer, index);
+                    ExcelColumnVerifyUtils.verity(propVal, row.getRowNum() + 1, indexWithTitle.get(index), excleColumnVerify, onlyContainer, index);
                 }
             }
             result.add(t);
         }
         return result;
     }
-
 
 
     public static Boolean isBlankRow(int noIndex, Row row) {
@@ -112,83 +108,83 @@ public class ExcelUtils {
     }
 
     /**
-     *导出excel
+     * 导出excel
      */
-    public static<T> void export(List<T> modelList, Object headModel) throws Exception {
+    public static <T> void export(List<T> modelList) throws Exception {
         if (null == modelList || modelList.size() < 1) {
             return;
         }
         Class<T> clazz = (Class<T>) modelList.get(0).getClass();
         //获取模版
         ExcleSheet excleSheet = clazz.getAnnotation(ExcleSheet.class);
-        String templateFileName = excleSheet.templateFileName();
-        InputStream resourceAsStream = ExcelUtils.class.getResourceAsStream(templateFileName);
-        Workbook wb = WorkbookFactory.create(resourceAsStream);
-        Sheet sheet = wb.getSheetAt(0);
+        Workbook wb = new XSSFWorkbook();
+        Sheet sheet = wb.createSheet(excleSheet.sheetName());
         //获取单元格样式
-        CellStyle cellStyle = sheet.getRow(excleSheet.startIndex()).getCell(0).getCellStyle();
+        setHeader(modelList.get(0), sheet.createRow(excleSheet.startIndex()));
+
         Integer counter = excleSheet.startIndex();
-        Map<Integer, DateFormat> indexWithDateFormat = new HashMap<>();
-        //id生成器
-        Double idCounter = 1d;
 
-
-
-        for (T t: modelList) {
-            //从最后一行开始写
-            Row row = sheet.createRow(counter++);
+        for (T t : modelList) {
+            Row row = sheet.createRow(++counter);
             Field[] fields = clazz.getDeclaredFields();
             for (Field field : fields) {
                 field.setAccessible(true);
                 ExcleColumn excleColumn = field.getAnnotation(ExcleColumn.class);
-                if (null == excleColumn) continue;
+                if (null == excleColumn) {
+                    continue;
+                }
                 int index = excleColumn.index();
-                //初始化时间字段的格式化器  index:dateFormat
-                if (!"".equals(excleColumn.dateFormat())) {
-                    indexWithDateFormat.put(index, new SimpleDateFormat("yyyy-MM-dd"));
-                }
-                Cell cell;
-                switch (excleColumn.javaType()) {
-                    case NONE:
-                        cell = row.createCell(index);
-                        cell.setCellStyle(cellStyle);
-                        break;
-                    case LIST:
-                        String name = field.getName();
-                        List<String> list = (ArrayList<String>) MyBeanUtils.getProperty(t, name);
-                        for (int i = 0; i < list.size(); ++i) {
-                            cell = row.createCell(index++);
-                            cell.setCellStyle(cellStyle);
-                            cell.setCellValue(list.get(i));
-                        }
-                        break;
-                    case IDENTITY:
-                            cell = row.createCell(index);
-                            cell.setCellStyle(cellStyle);
-                            cell.setCellValue(idCounter++);
-                        break;
-                        default:
-                            cell = row.createCell(index);
-                            cell.setCellStyle(cellStyle);
-                            String fieldName = field.getName();
-                            Object o = MyBeanUtils.getProperty(t, fieldName);
-                            if (null== o) break;
-                            String value;
-                            if (excleColumn.javaType().equals(ExcelColumType.DATE)) {
-                                DateFormat dateFormat = indexWithDateFormat.get(index);
-                                value = dateFormat.format((Date) o);
-                            }else {
-                                value = o.toString();
-                            }
-                            cell.setCellValue(value);
-                        break;
-                }
-
+                Cell cell = row.createCell(index);
+                setCellValue(t, field, excleColumn, cell);
             }
         }
-        wb.write(new FileOutputStream("/Users/xiaozhi/Desktop/"+excleSheet.exportFileName() + excleSheet.exName()));
+        wb.write(new FileOutputStream("/Users/zhaoxuedui/Desktop/" + excleSheet.exportFileName() + excleSheet.exName()));
     }
 
+
+    private static <T> void setHeader(T data, Row row) {
+        if (data == null) {
+            return;
+        }
+        Field[] fields = data.getClass().getDeclaredFields();
+        for (Field field : fields) {
+            field.setAccessible(true);
+            ExcleColumn excleColumn = field.getAnnotation(ExcleColumn.class);
+            if (null == excleColumn) {
+                continue;
+            }
+            int index = excleColumn.index();
+            Cell cell = row.createCell(index);
+            cell.setCellValue(excleColumn.name());
+        }
+
+    }
+
+    private static <E> void setCellValue(E data, Field field, ExcleColumn excleColumn, Cell cell) throws Exception {
+        if (field == null) {
+            cell.setCellValue("");
+            return;
+        }
+        Object o = MyBeanUtils.getProperty(data, field.getName());
+        switch (excleColumn.javaType()) {
+            case DOUBLE:
+                cell.setCellValue(new Double((Double) o));
+                break;
+            case BOOLEAN:
+                cell.setCellValue((Boolean) o);
+                break;
+            case CALENDAR:
+                cell.setCellValue((Calendar) o);
+                break;
+            case DATE:
+                cell.setCellValue(DateTimeFormatter.ofPattern(excleColumn.dateFormat()).format(((Date) o).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()));
+                break;
+            default:
+                cell.setCellValue(o.toString());
+                break;
+        }
+
+    }
 
     public static void checkExcleFile(File file) {
         if (null == file) {

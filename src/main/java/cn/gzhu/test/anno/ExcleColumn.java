@@ -8,9 +8,12 @@ import java.lang.annotation.Target;
 
 import static java.lang.annotation.ElementType.FIELD;
 
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+
 /**
  * 描述：excle字段标题
  * excle的字段从0开始
+ * @author zhaoxuedui
  */
 @Target({FIELD})
 @Retention(RetentionPolicy.RUNTIME)
@@ -24,5 +27,11 @@ public @interface ExcleColumn {
 
     String dateFormat() default "";
 
+    String name() default "";
+
+    /**
+     * class类型
+     */
+    Class<?> testCase() default Void.class;
 
 }
