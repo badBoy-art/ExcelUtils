@@ -12,6 +12,9 @@ import cn.gzhu.test.exception.RowNumBeyondException;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -19,7 +22,6 @@ import java.io.FileOutputStream;
 import java.lang.reflect.Field;
 import java.text.DecimalFormat;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class ExcelUtils {
@@ -76,7 +78,14 @@ public class ExcelUtils {
                         MyBeanUtils.setProperty(t, field.getName(), doubleVal);
                         break;
                     case DATE:
-                        Date dateVal = cell.getDateCellValue();
+                        Date dateVal;
+                        if (CellType.NUMERIC == cell.getCellTypeEnum()) {
+                            dateVal = cell.getDateCellValue();
+                        } else {
+                            DateTimeFormatter dateFormat = DateTimeFormat.forPattern(excleColumn.dateFormat());
+                            dateVal = DateTime.parse(cell.getStringCellValue(), dateFormat).toDate();
+                        }
+
                         MyBeanUtils.setProperty(t, field.getName(), dateVal);
                         break;
                 }
@@ -85,7 +94,7 @@ public class ExcelUtils {
 
                 if (null != excleColumnVerify) {
                     Object propVal = MyBeanUtils.getProperty(t, field.getName());
-                    ExcelColumnVerifyUtils.verity(propVal, row.getRowNum() + 1, indexWithTitle.get(index), excleColumnVerify, onlyContainer, index);
+                    //ExcelColumnVerifyUtils.verity(propVal, row.getRowNum() + 1, indexWithTitle.get(index), excleColumnVerify, onlyContainer, index);
                 }
             }
             result.add(t);
@@ -183,7 +192,7 @@ public class ExcelUtils {
                 cell.setCellValue((Calendar) o);
                 break;
             case DATE:
-                cell.setCellValue(DateTimeFormatter.ofPattern(excleColumn.dateFormat()).format(((Date) o).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()));
+                cell.setCellValue(DateTimeFormat.forPattern(excleColumn.dateFormat()).parseDateTime(o.toString()).toDate());
                 break;
             default:
                 cell.setCellValue(o.toString());

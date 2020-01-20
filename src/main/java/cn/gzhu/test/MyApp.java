@@ -18,10 +18,11 @@ import java.util.*;
 
 public class MyApp {
 
-    private static String desktopString = "/Users/xiaozhi/Desktop/";
+    private static String desktopString = "/Users/zhaoxuedui/Desktop/";
 
     public static void main(String[] args) throws Exception {
-        testExportList();
+        //testExportList();
+        testImport();
     }
 
 
@@ -51,7 +52,7 @@ public class MyApp {
     }
 
     public static void testImport() throws Exception {
-        FileInputStream fileInputStream = new FileInputStream(new File("/Users/xiaozhi/Desktop/导入考生信息模版.xlsx"));
+        FileInputStream fileInputStream = new FileInputStream(new File("/Users/zhaoxuedui/Desktop/导入考生信息模版.xlsx"));
         //导入
         List<ExamineeExcelModel> examineeExcelModels = ExcelUtils.covertExcel2Model(fileInputStream, ExamineeExcelModel.class);
         for (ExamineeExcelModel a : examineeExcelModels) {

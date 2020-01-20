@@ -8,11 +8,10 @@ import java.lang.annotation.Target;
 
 import static java.lang.annotation.ElementType.FIELD;
 
-import org.apache.poi.hssf.usermodel.HSSFCellStyle;
-
 /**
  * 描述：excle字段标题
  * excle的字段从0开始
+ *
  * @author zhaoxuedui
  */
 @Target({FIELD})
@@ -25,7 +24,7 @@ public @interface ExcleColumn {
 
     ExcelColumType javaType();
 
-    String dateFormat() default "";
+    String dateFormat() default "yyyy-MM-dd HH:mm:ss";
 
     String name() default "";
 
