@@ -15,16 +15,15 @@ import org.apache.poi.ss.usermodel.CellType;
  * 描述：考生excel模型
  */
 @Data
-@ExcleSheet(exportFileName = "excelUtil", ignoreOnlyHaveNoRow = -1, startIndex = 0, sheetName = "myTest", excellType = ExcelType.EXCEL_2007)
+@ExcleSheet(exportFileName = "poi.pv.photo", ignoreOnlyHaveNoRow = -1, startIndex = 0, sheetName = "myTest", excellType = ExcelType.EXCEL_2007)
 public class ExamineeGradeExcelModel {
-
-    @ExcleColumn(index = 0, javaType = ExcelColumType.IDENTITY, name = "序号")
-    private Integer no;
-
-    @ExcleColumn(index = 1, javaType = ExcelColumType.STRING, name = "考试账号")
-    private String account;
-
-    @ExcleColumn(index = 2, javaType = ExcelColumType.DATE, dateFormat = "yyyy-MM-dd HH:mm", name = "入场时间")
-    private Date submitTime;
+    @ExcleColumn(index = 0, javaType = ExcelColumType.STRING, name = "poiId")
+    private String poiId;
+    @ExcleColumn(index = 1, javaType = ExcelColumType.STRING, name = "poiName")
+    private String poiName;
+    @ExcleColumn(index = 2, javaType = ExcelColumType.STRING, name = "pv")
+    private String pv;
+    @ExcleColumn(index = 3, javaType = ExcelColumType.STRING, name = "视频数")
+    private String photoNmus;
 
 }

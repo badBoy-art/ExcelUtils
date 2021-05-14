@@ -21,18 +21,25 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.lang.reflect.Field;
 import java.text.DecimalFormat;
-import java.time.ZoneId;
 import java.util.*;
 
 public class ExcelUtils {
 
+    public static <T> Map<String, List<T>> covertExcel2ModelList(FileInputStream file, Class<T> clazz) throws Exception {
+        Map<String, List<T>> result = new HashMap<>();
+        Workbook wb = WorkbookFactory.create(file);
+        Iterator<Sheet> sheets = wb.sheetIterator();
+        while (sheets.hasNext()) {
+            Sheet sheet = sheets.next();
+            result.put(sheet.getSheetName(), covertExcel2Model(sheet, clazz));
+        }
+        return result;
+    }
 
-    public static <T> List<T> covertExcel2Model(FileInputStream file, Class<T> clazz) throws Exception {
+    public static <T> List<T> covertExcel2Model(Sheet sheet, Class<T> clazz) throws Exception {
 
         ExcleSheet excleSheet = clazz.getAnnotation(ExcleSheet.class);
         List result = new ArrayList<T>();
-        Workbook wb = WorkbookFactory.create(file);
-        Sheet sheet = wb.getSheetAt(0);
 
         if ((sheet.getLastRowNum() + 1 - excleSheet.startIndex()) > excleSheet.maxRowNum()) {
             throw new RowNumBeyondException("导入的行数超过最大值:" + excleSheet.maxRowNum());
@@ -77,6 +84,14 @@ public class ExcelUtils {
                         Double doubleVal = Double.parseDouble(format.format(cell.getNumericCellValue()));
                         MyBeanUtils.setProperty(t, field.getName(), doubleVal);
                         break;
+                    case LONG:
+                        Long longVal = new Long((long) cell.getNumericCellValue());
+                        MyBeanUtils.setProperty(t, field.getName(), longVal);
+                        break;
+                    case INTEGER:
+                        Integer intVal = (int) cell.getNumericCellValue();
+                        MyBeanUtils.setProperty(t, field.getName(), intVal);
+                        break;
                     case DATE:
                         Date dateVal;
                         if (CellType.NUMERIC == cell.getCellTypeEnum()) {
@@ -100,6 +115,19 @@ public class ExcelUtils {
             result.add(t);
         }
         return result;
+    }
+
+    public static <T> List<T> covertExcel2Model(FileInputStream file, Class<T> clazz) throws Exception {
+
+        ExcleSheet excleSheet = clazz.getAnnotation(ExcleSheet.class);
+        Workbook wb = WorkbookFactory.create(file);
+        Sheet sheet = wb.getSheetAt(0);
+
+        if ((sheet.getLastRowNum() + 1 - excleSheet.startIndex()) > excleSheet.maxRowNum()) {
+            throw new RowNumBeyondException("导入的行数超过最大值:" + excleSheet.maxRowNum());
+        }
+
+        return covertExcel2Model(sheet, clazz);
     }
 
 

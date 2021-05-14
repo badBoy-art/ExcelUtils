@@ -2,6 +2,8 @@ package cn.gzhu.test;
 
 import cn.gzhu.test.pojo.ExamineeExcelModel;
 import cn.gzhu.test.pojo.ExamineeGradeExcelModel;
+import cn.gzhu.test.pojo.PoiExcelModel;
+import cn.gzhu.test.pojo.PoiPhotoModel;
 import cn.gzhu.test.utils.ExcelUtils;
 
 import org.apache.poi.ss.usermodel.Row;
@@ -15,6 +17,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
+import com.google.gson.Gson;
 
 public class MyApp {
 
@@ -25,20 +33,15 @@ public class MyApp {
         testImport();
     }
 
-
     public static void testExportList() throws Exception {
         List<ExamineeGradeExcelModel> list = new ArrayList<ExamineeGradeExcelModel>();
         for (int i = 0; i < 5; ++i) {
             ExamineeGradeExcelModel e = new ExamineeGradeExcelModel();
-            e.setAccount("hello" + i);
-            e.setNo(i + 1);
-            e.setSubmitTime(new Date());
             list.add(e);
         }
         ExcelUtils.export(list);
         System.out.println("已经导出。。。");
     }
-
 
     public static void testEncodeAndDecode() throws Exception {
         String originalInput = "我是小明";
@@ -52,13 +55,27 @@ public class MyApp {
     }
 
     public static void testImport() throws Exception {
-        FileInputStream fileInputStream = new FileInputStream(new File("/Users/zhaoxuedui/Desktop/导入考生信息模版.xlsx"));
+        FileInputStream fileInputStream = new FileInputStream(new File("/Users/zhaoxuedui/Desktop/poitop.xlsx"));
         //导入
-        List<ExamineeExcelModel> examineeExcelModels = ExcelUtils.covertExcel2Model(fileInputStream, ExamineeExcelModel.class);
-        for (ExamineeExcelModel a : examineeExcelModels) {
-            System.out.println(a);
-            System.out.println("======================");
-        }
+        List<PoiExcelModel> excelModels = ExcelUtils.covertExcel2Model(fileInputStream, PoiExcelModel.class);
+        //Map<String, List<PoiExcelModel>> map = excelModels.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, a -> a.getValue().stream().sorted(Comparator.comparing(PoiExcelModel::getRankingNum)).collect(Collectors.toList()), (k1, k2) -> k1));
+        Gson gson = new Gson();
+        //System.out.println(gson.toJson(excelModels.get(0)));
+        FileInputStream fileInputStream1 = new FileInputStream(new File("/Users/zhaoxuedui/Desktop/nums.xlsx"));
+        List<PoiPhotoModel> photoModels = ExcelUtils.covertExcel2Model(fileInputStream1, PoiPhotoModel.class);
+        Map<String, String> map = photoModels.stream().collect(Collectors.toMap(PoiPhotoModel::getPoiId, PoiPhotoModel::getPhotoNums, (k1, k2) -> k1));
+        List<ExamineeGradeExcelModel> models = excelModels.stream().map(poiExcelModel -> {
+            ExamineeGradeExcelModel model = new ExamineeGradeExcelModel();
+            model.setPoiId(poiExcelModel.getPoiId());
+            model.setPoiName(poiExcelModel.getPoiName());
+            model.setPv(poiExcelModel.getPv());
+            model.setPhotoNmus(map.getOrDefault(poiExcelModel.getPoiId(), "0"));
+
+            return model;
+        }).collect(Collectors.toList());
+
+        ExcelUtils.export(models);
+
     }
 
     //XSSF07  HSSF03

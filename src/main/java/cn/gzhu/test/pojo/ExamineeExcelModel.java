@@ -14,7 +14,7 @@ import java.util.Date;
  * 描述：考生excel模型
  */
 @Data
-@ExcleSheet(titleIndex = 1, startIndex = 2, importBlankRow = false, ignoreOnlyHaveNoRow = 0, excellType = ExcelType.EXCEL_2007)
+@ExcleSheet(titleIndex = 0, startIndex = 1, importBlankRow = false, ignoreOnlyHaveNoRow = 0, excellType = ExcelType.EXCEL_2007)
 public class ExamineeExcelModel {
 
     @ExcleColumn(index = 1, javaType = ExcelColumType.STRING)
